@@ -1,3 +1,4 @@
+import { NOTE_NAMES, TONES } from './tones.js';
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
 const createOscillator = (freq) => {
@@ -17,11 +18,12 @@ const createGainNode = () => {
 };
 
 class Note {
-  constructor(freq) {
+  constructor(name, freq) {
     this.oscillatorNode = createOscillator(freq);
     this.gainNode = createGainNode();
     this.oscillatorNode.connect(this.gainNode);
     this.frequency = freq;
+    this.name = name;
   }
 
   start() {

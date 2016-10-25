@@ -23050,7 +23050,7 @@
 /***/ },
 /* 196 */,
 /* 197 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
@@ -23059,6 +23059,8 @@
 	});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	var _tones = __webpack_require__(202);
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
@@ -23081,13 +23083,14 @@
 	};
 	
 	var Note = function () {
-	  function Note(freq) {
+	  function Note(name, freq) {
 	    _classCallCheck(this, Note);
 	
 	    this.oscillatorNode = createOscillator(freq);
 	    this.gainNode = createGainNode();
 	    this.oscillatorNode.connect(this.gainNode);
 	    this.frequency = freq;
+	    this.name = name;
 	  }
 	
 	  _createClass(Note, [{
@@ -23126,7 +23129,9 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var preloadedState = {
-	  notes: []
+	  notes: [],
+	  isRecording: false,
+	  tracks: {}
 	};
 	
 	var configureStore = function configureStore() {
@@ -23370,6 +23375,12 @@
 	
 	var _note2 = _interopRequireDefault(_note);
 	
+	var _notes_actions = __webpack_require__(201);
+	
+	var _note_key = __webpack_require__(208);
+	
+	var _note_key2 = _interopRequireDefault(_note_key);
+	
 	var _jquery = __webpack_require__(207);
 	
 	var _jquery2 = _interopRequireDefault(_jquery);
@@ -23393,31 +23404,72 @@
 	    _this.notes = [];
 	    _tones.NOTE_NAMES.forEach(function (noteName) {
 	      var freq = _tones.TONES[noteName];
-	      _this.notes.push(new _note2.default(freq));
+	      _this.notes.push(new _note2.default(noteName, freq));
 	    });
+	
+	    _this.playNotes = _this.playNotes.bind(_this);
 	    return _this;
 	  }
 	
 	  _createClass(Synth, [{
+	    key: 'componentDidMount',
+	    value: function componentDidMount() {
+	      var _this2 = this;
+	
+	      (0, _jquery2.default)(document).on('keydown', function (e) {
+	        return _this2.onKeyDown(e);
+	      });
+	      (0, _jquery2.default)(document).on('keyup', function (e) {
+	        return _this2.onKeyUp(e);
+	      });
+	    }
+	  }, {
 	    key: 'onKeyDown',
-	    value: function onKeyDown(e) {}
+	    value: function onKeyDown(e) {
+	      var currentKey = e.key;
+	      this.props.keyPressed(currentKey);
+	    }
+	  }, {
+	    key: 'onKeyUp',
+	    value: function onKeyUp(e) {
+	      var currentKey = e.key;
+	      this.props.keyReleased(currentKey);
+	    }
+	  }, {
+	    key: 'playNotes',
+	    value: function playNotes() {
+	      var _this3 = this;
+	
+	      var playNotes = function playNotes(callback) {
+	        var frequenciesArr = _this3.props.notes.map(function (noteKey) {
+	          return _tones.TONES[noteKey];
+	        });
+	        callback(frequenciesArr);
+	      };
+	
+	      var checkNotes = function checkNotes(frequencies) {
+	        _this3.notes.forEach(function (note) {
+	          if (frequencies.includes(note.frequency)) {
+	            note.start();
+	          } else {
+	            note.stop();
+	          }
+	        });
+	      };
+	
+	      playNotes(checkNotes);
+	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
+	      this.playNotes();
+	
 	      return _react2.default.createElement(
-	        'div',
+	        'ul',
 	        null,
-	        _react2.default.createElement(
-	          'ul',
-	          null,
-	          this.notes.map(function (note, idx) {
-	            return _react2.default.createElement(
-	              'li',
-	              { key: idx },
-	              note.frequency
-	            );
-	          })
-	        )
+	        this.notes.map(function (note, idx) {
+	          return _react2.default.createElement(_note_key2.default, { key: idx, note: note, pressed: false, idx: idx });
+	        })
 	      );
 	    }
 	  }]);
@@ -33652,6 +33704,35 @@
 	return jQuery;
 	} );
 
+
+/***/ },
+/* 208 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _react = __webpack_require__(1);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var NoteKey = function NoteKey(_ref) {
+	  var note = _ref.note;
+	  var pressed = _ref.pressed;
+	  var idx = _ref.idx;
+	  return _react2.default.createElement(
+	    'li',
+	    { className: pressed },
+	    note.name
+	  );
+	};
+	
+	exports.default = NoteKey;
 
 /***/ }
 /******/ ]);
